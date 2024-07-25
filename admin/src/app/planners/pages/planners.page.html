@@ -1,0 +1,233 @@
+<div class="card">
+    <p-toast/>
+    <p-table [value]="planners" dataKey="id"
+             [paginator]="true"
+             [rows]="10"
+             [rowHover]="false"
+             (onRowSelect)="PlannersPage.onRowSelect($event)"
+
+             [globalFilterFields] = "['name']"
+             [rowsPerPageOptions]="[10, 25, 50]"
+             [tableStyle]="{ 'min-width': '60rem' }" #dt>
+        <ng-template pTemplate="caption">
+            <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+
+                <div class="flex align-items-center flex-wrap">
+                     <span class="block mt-2 md:mt-0 p-input-icon-left flex align-items-center">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="PlannersPage.onInputFilter(dt, $event)" placeholder="Search..."
+                                   class="w-full sm:w-auto" #search>
+                            <button pButton type="button" icon="pi pi-times" class="ml-2 p-button-rounded p-button-icon-only custom-button w-2rem h-2rem"
+                                    (click)="PlannersPage.onClickClear()"></button>
+                        </span>
+
+                </div>
+            </div>
+        </ng-template>
+        <ng-template pTemplate="body" let-planner let-expanded="expanded">
+            <tr [pSelectableRow]="planner" [pRowToggler]="planner" style="cursor: pointer">
+                <td style="width: 50%;" class="text-xl">{{ planner.name }}</td>
+                <td style="width: 50%;" class="text-xl">{{ planner.ownerId | plannerOwner }}</td>
+                <td>
+                    <div class="flex gap-3 align-items-center">
+                        <i class="pi pi-play"></i>
+                        <i class="pi pi-download"></i>
+                        <i class="pi pi-copy"></i>
+                        <i class="pi pi-trash"></i>
+                        <p-button  type="button" [pRowToggler]="planner" [text]="true" [rounded]="true" [plain]="true" class="btn-expanded"
+                                  [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"/>
+                    </div>
+                </td>
+
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="rowexpansion" let-planner>
+            <tr style="background-color: #F8F9FA">
+                <td colspan="7">
+                    <div class="p-fluid">
+                        <div class="field grid">
+                            <label class="col-12 mb-2 md:col-2 md:mb-0" style="font-weight: bold">Name</label>
+                            <div class="col-12 md:col-10">
+                                <input pInputText type="text" [(ngModel)]="planner.name"/>
+                            </div>
+                        </div>
+                        <div class="field grid">
+                            <label class="col-12 mb-2 md:col-2 md:mb-0">Description</label>
+                            <div class="col-12 md:col-10">
+                                <input pInputText type="text" [(ngModel)]="planner.description"/>
+                            </div>
+                        </div>
+
+                        <div class="field grid">
+                            <label class="col-12 mb-2 md:col-2 md:mb-0">Planner Type</label>
+                            <div class="col-12 md:col-10">
+                                <p-dropdown
+                                    [options]="plannersModel.getPlannerType()"
+                                    [(ngModel)]="planner.plannerTypeId"
+                                    optionLabel="name"
+                                    placeholder="Select a Planner Type"/>
+                            </div>
+                        </div>
+
+                        <div class="field grid">
+                            <label class="col-12 mb-2 md:col-2 md:mb-0">External System Config</label>
+                            <div class="col-12 md:col-10">
+                                <p-dropdown
+                                    [options]="plannersModel.getESC()"
+                                    [(ngModel)]="planner.externalSystemConfig"
+                                    optionLabel="name"
+                                    placeholder="Select an External System Config"/>
+                            </div>
+                        </div>
+
+                        <div class="field grid">
+                            <label class="col-12 mb-2 md:col-2 md:mb-0">Funds</label>
+                            <div class="col-12 md:col-10">
+                                <div class="field ml-1">
+                                    <div *ngFor="let fund of funds; let i = index" class="grid gap-2 p-1 mt-1">
+                                        <div class="w-3rem">
+                                            <button pButton type="button" icon="pi pi-plus" class="mt-1 p-button-rounded p-button-icon-only custom-button w-3rem h-3rem"
+                                                    (click)="PlannersPage.onClickAddRow()" *ngIf="i + 1 == funds.length"></button>
+                                        </div>
+                                        <div class="w-16rem">
+                                            <p-dropdown
+                                                [options]="plannersModel.getFunds()"
+                                                [(ngModel)]="planner.funds"
+                                                optionLabel="name"
+                                                placeholder="Fund Name"/>
+                                        </div>
+                                        <div class="w-16rem">
+                                        <p-dropdown
+                                            [options]="plannersModel.getAlias()"
+                                            [(ngModel)]="planner.alias"
+                                            optionLabel="name"
+                                            placeholder="Fund Alias"/>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field grid mt-1">
+                            <label class="col-12 mb-2 md:col-2 md:mb-0">Trigger</label>
+                            <div class="col-12 md:col-10 grid gap-4 ml-1">
+                                <div>
+                                    <p-checkbox
+                                        [(ngModel)]="planner.triggerSources"
+                                        [binary]="true"
+                                        inputId="binary"/>
+                                    Sources
+                                </div>
+                                <div>
+                                    <p-checkbox
+                                        [(ngModel)]="planner.triggerRuns"
+                                        [binary]="true"
+                                        inputId="binary"/>
+                                    Runs
+                                </div>
+                                <div>
+                                    <p-checkbox
+                                        [(ngModel)]="planner.triggerReports"
+                                        [binary]="true"
+                                        inputId="binary"/>
+                                    Reports
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                   <hr />
+
+                   <div class="mt-5">
+                       <div class="field grid">
+                           <label class="col-12 mb-2 md:col-2 md:mb-0">Sources</label>
+                           <div class="col-12 md:col-10">
+                               <div class="field ml-2">
+                                   <div *ngFor="let source of sources; let i = index" class="grid gap-2 p-1 mt-3">
+                                       <div class="w-3rem">
+                                           <button pButton type="button" icon="pi pi-plus" class="mt-1  p-button-icon-only custom-button w-2rem h-2rem"
+                                                   (click)="PlannersPage.onClickAddRowSources()" *ngIf="i + 1 == sources.length"></button>
+                                       </div>
+                                       <div class="grid">
+                                           <div class="col">
+                                               <input pInputText type="text" placeholder="Source Name" />
+                                           </div>
+                                           <div class="col">
+                                               <p-dropdown
+                                                   [options]="plannersModel.getSources()"
+                                                   [(ngModel)]="planner.sourcesId"
+                                                   optionLabel="name"
+                                                   placeholder="Select a Source"/>
+                                           </div>
+                                       </div>
+                                   </div>
+
+                               </div>
+                           </div>
+                       </div>
+                       <div class="field grid">
+                           <label class="col-12 mb-2 md:col-2 md:mb-0">Runs</label>
+                           <div class="col-12 md:col-10">
+                               <div class="field ml-2">
+                                   <div *ngFor="let run of runs; let i = index" class="grid gap-2 p-1 mt-3">
+                                       <div class="w-3rem">
+                                           <button pButton type="button" icon="pi pi-plus" class="mt-1  p-button-icon-only custom-button w-2rem h-2rem"
+                                                   (click)="PlannersPage.onClickAddRowRuns()" *ngIf="i + 1 == runs.length"></button>
+                                       </div>
+                                       <div class="grid">
+                                           <div class="col">
+                                               <p-dropdown
+                                                   styleClass="w-full"
+                                                   [options]="plannersModel.getRuns()"
+                                                   [(ngModel)]="planner.runsId"
+                                                   optionLabel="name"
+                                                   placeholder="Select Runs"/>
+                                           </div>
+                                       </div>
+                                   </div>
+
+                               </div>
+                           </div>
+                       </div>
+                       <div class="field grid">
+                           <label class="col-12 mb-2 md:col-2 md:mb-0">Reports</label>
+                           <div class="col-12 md:col-10">
+                               <div class="field ml-2">
+                                   <div *ngFor="let report of reports; let i = index" class="grid gap-2 p-1 mt-3">
+                                       <div class="w-3rem">
+                                           <button pButton type="button" icon="pi pi-plus" class="mt-1  p-button-icon-only custom-button w-2rem h-2rem"
+                                                   (click)="PlannersPage.onClickAddRowReports()" *ngIf="i + 1 == reports.length"></button>
+                                       </div>
+                                       <div class="grid">
+                                           <div class="col">
+                                               <p-dropdown
+                                                   [options]="plannersModel.getReports()"
+                                                   [(ngModel)]="planner.reportsId"
+                                                   optionLabel="name"
+                                                   placeholder="Select a Report"/>
+                                           </div>
+                                       </div>
+                                   </div>
+
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+                    <hr />
+                    <div class="field grid">
+                        <label class="col-12 mb-2 md:col-2 md:mb-0"></label>
+                        <div class="col-2">
+                            <button
+                                (click)="PlannersPage.onClick(planner)"
+                                pButton
+                                pRipple
+                                label="Save"
+                                class="p-button-success">
+                            </button>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
